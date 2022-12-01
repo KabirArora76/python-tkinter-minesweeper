@@ -8,6 +8,10 @@ import random
 import platform
 import time
 from datetime import time, date, datetime
+from controller import Controller
+# imports for running in VS code ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ REMOVE BEFORE SUBMISSION
+import os 
+import sys
 
 SIZE_X = 10
 SIZE_Y = 10
@@ -21,6 +25,11 @@ BTN_FLAG = "<Button-2>" if platform.system() == 'Darwin' else "<Button-3>"
 
 window = None
 
+# if statement is only so that I can run this in VS code ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ REMOVE BEFORE SUBMISSION
+if sys.argv:
+    filepath = sys.argv[0]
+    folder, filename = os.path.split(filepath)
+    os.chdir(folder) # now your working dir is the parent folder of the script
 class Minesweeper:
 
     def __init__(self, tk):
@@ -55,6 +64,7 @@ class Minesweeper:
         self.restart() # start game
         self.updateTimer() # init timer
 
+    # controller /
     def setup(self):
         # create flag and clicked tile variables
         self.flagCount = 0
@@ -107,14 +117,17 @@ class Minesweeper:
                     mc += 1 if n["isMine"] else 0
                 self.tiles[x][y]["mines"] = mc
 
+    # model /
     def restart(self):
         self.setup()
         self.refreshLabels()
 
+    # view /
     def refreshLabels(self):
         self.labels["flags"].config(text = "Flags: "+str(self.flagCount))
         self.labels["mines"].config(text = "Mines: "+str(self.mines))
 
+    # model /
     def gameOver(self, won):
         for x in range(0, SIZE_X):
             for y in range(0, SIZE_Y):
@@ -132,6 +145,7 @@ class Minesweeper:
         else:
             self.tk.quit()
 
+    # view /
     def updateTimer(self):
         ts = "00:00:00"
         if self.startTime != None:
@@ -142,6 +156,7 @@ class Minesweeper:
         self.labels["time"].config(text = ts)
         self.frame.after(100, self.updateTimer)
 
+    # model /
     def getNeighbors(self, x, y):
         neighbors = []
         coords = [
@@ -161,12 +176,15 @@ class Minesweeper:
                 pass
         return neighbors
 
+    # controller /
     def onClickWrapper(self, x, y):
         return lambda Button: self.onClick(self.tiles[x][y])
 
+    # controller /
     def onRightClickWrapper(self, x, y):
         return lambda Button: self.onRightClick(self.tiles[x][y])
 
+    # controller /
     def onClick(self, tile):
         if self.startTime == None:
             self.startTime = datetime.now()
@@ -189,6 +207,7 @@ class Minesweeper:
         if self.clickedCount == (SIZE_X * SIZE_Y) - self.mines:
             self.gameOver(True)
 
+    # controller /
     def onRightClick(self, tile):
         if self.startTime == None:
             self.startTime = datetime.now()
@@ -214,6 +233,7 @@ class Minesweeper:
             self.flagCount -= 1
             self.refreshLabels()
 
+    # controller /
     def clearSurroundingTiles(self, id):
         queue = deque([id])
 
@@ -226,6 +246,7 @@ class Minesweeper:
             for tile in self.getNeighbors(x, y):
                 self.clearTile(tile, queue)
 
+    # controller /
     def clearTile(self, tile, queue):
         if tile["state"] != STATE_DEFAULT:
             return
@@ -243,13 +264,15 @@ class Minesweeper:
 
 def main():
     # create Tk instance
-    window = Tk()
+    # window = Tk()
     # set program title
-    window.title("Minesweeper")
+    # window.title("Minesweeper")
+    textbased = False
     # create game instance
-    minesweeper = Minesweeper(window)
-    # run event loop
-    window.mainloop()
+    # minesweeper = Minesweeper(window)
+    controller = Controller(textbased)
+    
+    controller.startGame()
 
 if __name__ == "__main__":
     main()
