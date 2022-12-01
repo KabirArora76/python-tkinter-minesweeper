@@ -56,6 +56,7 @@ class View:
             self.labels["flags"].grid(row = self.controller.SIZE_X+1, column = int(self.controller.SIZE_Y/2)-1, columnspan = int(self.controller.SIZE_Y/2)) # bottom right
     
     def restart(self):
+        # start new game
         self.startTime = None
         if not self.controller.textbased:
             self.updateTimer()

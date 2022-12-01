@@ -26,6 +26,7 @@ class Controller:
         self.view.refreshLabels()
     
     def restart(self):
+        #  start new game
         self.model = Model(self)
         self.view.restart()
         

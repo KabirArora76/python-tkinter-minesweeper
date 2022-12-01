@@ -64,6 +64,7 @@ class Model:
                 self.tiles[x][y]["mines"] = mc
         
     def restart(self):
+        # start new game
         self.controller.restart()
         
     def gameOver(self, won):
