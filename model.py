@@ -7,7 +7,7 @@ import time
 from datetime import time, date, datetime
 
 class Model:
-    def __init__(self, controller, multiple=False):
+    def __init__(self, controller, numMines):
         
         self.controller = controller
         
@@ -22,7 +22,9 @@ class Model:
         
         # create buttons
         self.tiles = dict({})
-        self.mines = 0
+        self.mines = numMines
+        self.treasures = 0
+        self.treasureCredit = 0
         for x in range(0, self.controller.SIZE_X):
             for y in range(0, self.controller.SIZE_Y):
                 if y == 0:
@@ -30,30 +32,33 @@ class Model:
 
                 id = str(x) + "_" + str(y)
                 isMine = False
+                isTreasure = False
 
-                # currently random amount of mines
-                if random.uniform(0.0, 1.0) < 0.1:
-                    isMine = True
-                    self.mines += 1
+                # # currently random amount of mines
+                # if random.uniform(0.0, 1.0) < 0.1:
+                #     isMine = True
+                #     self.mines += 1
                 
                 tile = {
                     "id": id,
                     "isMine": isMine,
+                    "isTreasure": isTreasure,
                     "state": self.STATE_DEFAULT,
                     "coords": {
                         "x": x,
                         "y": y
                     },
-                    "button": self.controller.makeButtonController("plain"),
+                    "button": self.controller.view.makeButton("plain"),
                     "mines": 0 # calculated after grid is built
                 }
                 
-                if multiple:
-                    self.controller.updateButtonController(tile["button"], "plain")
                 if not controller.textbased:
-                    self.controller.bindButtonController(tile, x, y)
+                    self.controller.view.bindButton(tile, x, y)
 
                 self.tiles[x][y] = tile
+                
+        self.placeMines(self.mines) 
+        self.placeTreasure(self.mines)
                 
         # loop again to find nearby mines and display number on tile
         for x in range(0, self.controller.SIZE_X):
@@ -62,15 +67,40 @@ class Model:
                 for n in self.getNeighbors(x, y):
                     mc += 1 if n["isMine"] else 0
                 self.tiles[x][y]["mines"] = mc
-        
-    def restart(self):
-        # start new game
-        self.controller.restart()
-        
+    
+    # this method randoly places a specific number of mines on the board
+    # 
+    # this method is in the model class because it a core element of the game
+    def placeMines(self, numMines):
+        for i in range(numMines):
+            x = random.randint(0, self.controller.SIZE_X-1)
+            y = random.randint(0, self.controller.SIZE_Y-1)
+            if self.tiles[x][y]["isMine"]:
+                self.placeMines(1)
+            else: 
+                self.tiles[x][y]["isMine"] = True
+    
+    # this method randoly places a random number of treasures in the game which is less than the number of mines
+    # @Requires
+    # @Ensures
+    # 
+    # this method is in the model class because it a core element of the game     
+    def placeTreasure(self, numMines):
+        rangeNum = random.randint(1, numMines-1)
+        for i in range(rangeNum):
+            x = random.randint(0, self.controller.SIZE_X-1)
+            y = random.randint(0, self.controller.SIZE_Y-1)
+            if not self.tiles[x][y]["isMine"]:
+                self.tiles[x][y]["isTreasure"] = True
+                self.treasures += 1
+    
+    # this method checks if the game is over
+    # 
+    # this method is in the model class because it knows if the user won the game
     def gameOver(self, won):
         self.controller.checkMine()
         
-        res = self.controller.playAgain(won)
+        res = self.controller.view.askPlayAgain(won)
 
         if res:
             self.restart()
@@ -78,6 +108,9 @@ class Model:
             self.gameEnd = True
             self.controller.quit()
     
+    # this method gets the neighbors of a tile
+    # 
+    # this method is in the model class because determines the neighbors of a tile is a core aspect of the game
     def getNeighbors(self, x, y):
         neighbors = []
         coords = [
