@@ -7,7 +7,7 @@ import time
 from datetime import time, date, datetime
 
 class Model:
-    def __init__(self, controller, numMines):
+    def __init__(self, controller, numMines, testing):
         
         self.controller = controller
         
@@ -57,8 +57,8 @@ class Model:
 
                 self.tiles[x][y] = tile
                 
-        self.placeMines(self.mines) 
-        self.placeTreasure(self.mines)
+        self.placeMines(self.mines, testing) 
+        self.placeTreasure(self.mines, testing)
                 
         # loop again to find nearby mines and display number on tile
         for x in range(0, self.controller.SIZE_X):
@@ -71,28 +71,37 @@ class Model:
     # this method randoly places a specific number of mines on the board
     # 
     # this method is in the model class because it a core element of the game
-    def placeMines(self, numMines):
-        for i in range(numMines):
-            x = random.randint(0, self.controller.SIZE_X-1)
-            y = random.randint(0, self.controller.SIZE_Y-1)
-            if self.tiles[x][y]["isMine"]:
-                self.placeMines(1)
-            else: 
-                self.tiles[x][y]["isMine"] = True
+    def placeMines(self, numMines, testing):
+        if testing:
+            for n in self.controller.mineCoords:
+                self.tiles[n["x"]][n["y"]]["isMine"] = True
+        else:
+            for i in range(numMines):
+                x = random.randint(0, self.controller.SIZE_X-1)
+                y = random.randint(0, self.controller.SIZE_Y-1)
+                if self.tiles[x][y]["isMine"]:
+                    self.placeMines(1, testing)
+                else: 
+                    self.tiles[x][y]["isMine"] = True
     
     # this method randoly places a random number of treasures in the game which is less than the number of mines
     # @Requires
     # @Ensures
     # 
     # this method is in the model class because it a core element of the game     
-    def placeTreasure(self, numMines):
-        rangeNum = random.randint(1, numMines-1)
-        for i in range(rangeNum):
-            x = random.randint(0, self.controller.SIZE_X-1)
-            y = random.randint(0, self.controller.SIZE_Y-1)
-            if not self.tiles[x][y]["isMine"]:
-                self.tiles[x][y]["isTreasure"] = True
+    def placeTreasure(self, numMines, testing):
+        if testing:
+            for n in self.controller.tresureCoords:
+                self.tiles[n["x"]][n["y"]]["isTreasure"] = True
                 self.treasures += 1
+        else:
+            rangeNum = random.randint(1, numMines-1)
+            for i in range(rangeNum):
+                x = random.randint(0, self.controller.SIZE_X-1)
+                y = random.randint(0, self.controller.SIZE_Y-1)
+                if not self.tiles[x][y]["isMine"]:
+                    self.tiles[x][y]["isTreasure"] = True
+                    self.treasures += 1
     
     # this method checks if the game is over
     # 
@@ -103,7 +112,7 @@ class Model:
         res = self.controller.view.askPlayAgain(won)
 
         if res:
-            self.restart()
+            self.controller.restart()
         else:
             self.gameEnd = True
             self.controller.quit()

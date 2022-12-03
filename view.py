@@ -40,10 +40,13 @@ class View:
                 "flag": PhotoImage(file = "images/tile_flag.gif"),
                 "wrong": PhotoImage(file = "images/tile_wrong.gif"),
                 "treasure": PhotoImage(file = "images/tile_treasure.gif"),
-                "numbers": []
+                "numbers": [],
+                "treasureNums": []
             }
             for i in range(1, 9):
                 self.images["numbers"].append(PhotoImage(file = "images/tile_"+str(i)+".gif"))
+            for i in range(1, 9):
+                self.images["treasureNums"].append(PhotoImage(file = "images/tile_"+str(i)+"T.gif"))
 
             # set up frame
             self.frame = Frame(self.tk)
@@ -164,6 +167,9 @@ class View:
         if tile["mines"] == 0 and not tile["isTreasure"]:
             self.updateButton(tile, "clicked")
             queue.append(tile["id"])
+        elif tile["mines"] != 0 and tile["isTreasure"]:
+            self.updateButton(tile, "treasureNums", num=tile["mines"])
+            self.controller.model.treasureCredit += 0.5
         elif tile["isTreasure"]:
             self.updateButton(tile, "treasure")
             self.controller.model.treasureCredit += 0.5

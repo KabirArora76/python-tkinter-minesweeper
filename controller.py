@@ -1,12 +1,7 @@
 from tkinter import *
-from tkinter import messagebox as tkMessageBox
-from collections import deque
-import random
-import platform
-import time
-from datetime import time, date, datetime
 from model import Model
 from view import View
+import pandas as pd
 
 class Controller:
     # Initialize the controller object
@@ -14,6 +9,15 @@ class Controller:
     # @param diff - the difficulty of the game 
     def __init__(self, textbased, diff):    
         
+        isTesting = input("Enter testing mode? (Y, N): ").lower()
+        
+        # sets testing mode
+        self.testing = True if isTesting == 'y' else False
+        if self.testing:
+            self.mineCoords = []
+            self.tresureCoords = []
+            self.testingMode()
+            
         # set the difficulty of the game and update the number of mines
         self.numMines = 0
         self.setDiff(diff)
@@ -22,13 +26,94 @@ class Controller:
         
         # initialize the view and model
         self.view = View(self)
-        self.model = Model(self, self.numMines)
+        self.model = Model(self, self.numMines, self.testing)
         
         # init the timer for non textbased game
         if not self.textbased:
             self.view.updateTimer() # init timer
      
         self.view.refreshLabels()
+    
+    def testingMode(self):
+        filename = input("Enter file name for CSV file: ")
+        self.customBoard = pd.read_csv(filename + ".csv", header=None)
+        # check board if valid
+        eachRow = True
+        eachColumn = True
+        numAdjacent = 0
+        isolated = False
+        for x in range(0, 8):
+            if 1 not in self.customBoard[x]:
+                eachRow = False
+            foundMine = False
+            for y in range(0, 8):
+                if self.customBoard[x][y] == 2:
+                    self.tresureCoords.append({"x":y, "y":x})
+                if self.customBoard[x][y] == 1:
+                    self.mineCoords.append({"x":y, "y":x})
+                    foundMine = True
+                    # check if same row and column exists
+                    coords = self.coordsHelper(x, y)
+                    isoCoords = self.coordsHelper(x, y, True)
+                    for n in coords:
+                        try:
+                            if self.customBoard[n["x"]][n["y"]] == 1:
+                                numAdjacent += 1   
+                        except KeyError:
+                            pass
+                    isoMineCount = 0
+                    for n in isoCoords:
+                        try:
+                            if self.customBoard[n["x"]][n["y"]] == 1:
+                                isoMineCount += 1
+                        except KeyError:
+                            pass
+                    if isoMineCount == 0:
+                        isolated = True
+            if foundMine == False:
+                eachColumn = False
+        
+        if not eachRow and not eachColumn and numAdjacent != 0 and not isolated:
+            # not valid
+            print("CSV file is invalid")
+            self.__init__()
+    
+    def coordsHelper(self, j, k, iso=False):
+        if iso:
+            coords = [
+            {"x": j-1,  "y": k-1},  #top right
+            {"x": j-1,  "y": k},    #top middle
+            {"x": j-1,  "y": k+1},  #top left
+            {"x": j,    "y": k-1},  #left
+            {"x": j,    "y": k+1},  #right
+            {"x": j+1,  "y": k-1},  #bottom right
+            {"x": j+1,  "y": k},    #bottom middle
+            {"x": j+1,  "y": k+1},  #bottom left
+            {"x": j-2,  "y": k-2},
+            {"x": j-2,  "y": k},  
+            {"x": j-2,  "y": k+2},
+            {"x": j,    "y": k-2},
+            {"x": j,    "y": k+2},
+            {"x": j+2,  "y": k-2},
+            {"x": j+2,  "y": k},  
+            {"x": j+2,  "y": k+2},
+            {"x": j-2,  "y": k+1}, 
+            {"x": j+2,  "y": k+1}, 
+            {"x": j-2,  "y": k-1}, 
+            {"x": j+2,  "y": k-1}, 
+            {"x": j+1,  "y": k+2}, 
+            {"x": j-1,  "y": k+2}, 
+            {"x": j+1,  "y": k-2}, 
+            {"x": j+1,  "y": k-2}, 
+        ]
+        else:
+            coords = [
+                {"x": j-1,  "y": k},    #top
+                {"x": j,    "y": k-1},  #left
+                {"x": j,    "y": k+1},  #right
+                {"x": j+1,  "y": k},    #bottom
+            ]
+        return coords
     
     # sets the difficutly for the game
     # @Requires 
@@ -50,7 +135,7 @@ class Controller:
     # restarts the game
     def restart(self):
         #  start new game
-        self.model = Model(self, self.numMines)
+        self.model = Model(self, self.numMines, self.testing)
         self.view.restart()
     
     # starts the loop for the game 
