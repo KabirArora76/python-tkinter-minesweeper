@@ -57,9 +57,8 @@ class Model:
 
                 self.tiles[x][y] = tile
                 
-        self.placeMines(self.mines, testing) 
-        self.placeTreasure(self.mines, testing)
-                
+        self.placeMines(self.mines, testing)
+        
         # loop again to find nearby mines and display number on tile
         for x in range(0, self.controller.SIZE_X):
             for y in range(0, self.controller.SIZE_Y):
@@ -67,6 +66,8 @@ class Model:
                 for n in self.getNeighbors(x, y):
                     mc += 1 if n["isMine"] else 0
                 self.tiles[x][y]["mines"] = mc
+        
+        self.placeTreasure(self.mines, testing)
     
     # this method randoly places a specific number of mines on the board
     # 

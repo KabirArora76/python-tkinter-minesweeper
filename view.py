@@ -265,7 +265,7 @@ class View:
     # makes a button object
     # 
     # this method is in the view class because it creates a button for the user to send input
-    def makeButton(self, type, num = -1):
+    def makeButton(self, type):
         return Button(self.frame, image = self.images[type]) if not self.controller.textbased else self.textUnicode[type]
     
     # updates the image of a button object

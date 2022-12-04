@@ -11,18 +11,19 @@ class Controller:
         
         isTesting = input("Enter testing mode? (Y, N): ").lower()
         
+        self.textbased = textbased
+        self.diff = diff
+        
         # sets testing mode
         self.testing = True if isTesting == 'y' else False
         if self.testing:
             self.mineCoords = []
             self.tresureCoords = []
             self.testingMode()
-            
+        
         # set the difficulty of the game and update the number of mines
         self.numMines = 0
         self.setDiff(diff)
-        
-        self.textbased = textbased
         
         # initialize the view and model
         self.view = View(self)
@@ -34,16 +35,18 @@ class Controller:
      
         self.view.refreshLabels()
     
+    # setting testing mode and checking for a valid CSV file
     def testingMode(self):
         filename = input("Enter file name for CSV file: ")
         self.customBoard = pd.read_csv(filename + ".csv", header=None)
+        self.diff = "beginner"
         # check board if valid
         eachRow = True
         eachColumn = True
         numAdjacent = 0
         isolated = False
         for x in range(0, 8):
-            if 1 not in self.customBoard[x]:
+            if 1 not in self.customBoard[x].values:
                 eachRow = False
             foundMine = False
             for y in range(0, 8):
@@ -73,11 +76,14 @@ class Controller:
             if foundMine == False:
                 eachColumn = False
         
-        if not eachRow and not eachColumn and numAdjacent != 0 and not isolated:
+        if not eachRow or not eachColumn or numAdjacent != 2 or not isolated:
             # not valid
             print("CSV file is invalid")
-            self.__init__()
+            self.tresureCoords = []
+            self.mineCoords = []
+            self.testingMode()
     
+    #  helper method for testing mode
     def coordsHelper(self, j, k, iso=False):
         if iso:
             coords = [
@@ -131,8 +137,8 @@ class Controller:
             self.SIZE_Y = 16
             self.numMines = 40
         else:
-            self.SIZE_X = 30
-            self.SIZE_Y = 16
+            self.SIZE_X = 16
+            self.SIZE_Y = 30
             self.numMines = 99
     
     # restarts the game
