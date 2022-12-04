@@ -85,8 +85,8 @@ class Model:
                     self.tiles[x][y]["isMine"] = True
     
     # this method randoly places a random number of treasures in the game which is less than the number of mines
-    # @Requires
-    # @Ensures
+    # @Requires("numMines != None", "testing != None", "numMines >= 2", "typeOf(testing) == 'boolean'", "self.controller.tresureCoords != None")
+    # @Ensures("self.treasures >= 0")
     # 
     # this method is in the model class because it a core element of the game     
     def placeTreasure(self, numMines, testing):

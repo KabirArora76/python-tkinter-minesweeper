@@ -116,8 +116,11 @@ class Controller:
         return coords
     
     # sets the difficutly for the game
-    # @Requires 
-    # @Ensures
+    # @Requires("typeOf(diff) == 'string'", "diff != None")
+    # @Ensures("self.SIZE_X != None", "self.SIZE_Y != None", "self.numMines != None", 
+    #           "self.SIZE_X == 8 or self.SIZE_X == 16 or self.SIZE_X == 30", 
+    #           "self.SIZE_Y == 8 or self.SIZE_Y == 16", "self.numMines == 10 or self.numMines == 40 or self.numMines == 99")
+    # 
     def setDiff(self, diff):
         if diff == "beginner":
             self.SIZE_X = 8
